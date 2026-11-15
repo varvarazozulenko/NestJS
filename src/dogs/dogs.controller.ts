@@ -8,8 +8,8 @@ import { type Dog } from './dogs.interface.js';
 import { NumericSelectPipe } from '../common/pipes/select.pipe.js';
 
 import { ZodExceptionFilter } from '../common/filters/zod-exception.filter.js';
-import { ZodPipe } from '../common/pipes/zod.pipe.js';
 import { AuthGuard } from '../common/guards/auth.guard.js';
+import { ZodPipe } from '../common/pipes/zod.pipe.js';
 
 
 const createDogSchema = z.object({
@@ -22,6 +22,12 @@ const dogSchema = z.object({
   name: z.string().nonempty(),
   age: z.coerce.number().int().min(0)
 })
+
+const updateDogSchema = z.object({
+  id: z.coerce.number().int().min(1),
+  value: z.coerce.number().int().min(0),
+});
+
 
 @Controller('dogs')
 export class DogsController {
@@ -36,7 +42,7 @@ export class DogsController {
   })
   @Get()
   findAll(@Query('search', new DefaultValuePipe(null)) search: string): Dog[] {
-    return this.dogsService.findAll(search);
+    return (this.dogsService as any).findAll(search);
   }
 
   // задекорировать api-спецификацию (1 балл)
@@ -44,7 +50,7 @@ export class DogsController {
   // @UseGuards(AuthGuard)
   @Get(':id')
   findOne(@Param('id', ParseIntPipe) id: number): string {
-    const record = this.dogsService.findOne(id)
+    const record = (this.dogsService as any).findOne(id)
 
     if (!record) {
       throw new HttpException('Кот не найден', HttpStatus.NOT_FOUND)
